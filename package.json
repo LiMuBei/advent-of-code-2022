@@ -1,0 +1,16 @@
+{
+  "packageManager": "yarn@3.3.0",
+  "name": "advent-of-code-2022",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/LiMuBei/advent-of-code-2022.git",
+  "author": "Alexander Kasper <alexander.kasper@codecentric.de>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "day 1"
+  ],
+  "scripts": {
+    "lint": "yarn workspaces run lint"
+  }
+}
