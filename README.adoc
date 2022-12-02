@@ -1,0 +1,3 @@
+# Advent of code 2022
+
+This is my repo for doing the https://adventofcode.com[advent of code].
