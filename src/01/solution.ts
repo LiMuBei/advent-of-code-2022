@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 
 export function parseInput() {
-  const fileContents = readFileSync('./input.txt', 'utf-8');
+  const fileContents = readFileSync('src/01/input.txt', 'utf-8');
   const numbers = fileContents.split('\n\n').map((e) => e.split('\n').map((i) => {
     const converted: number = +i;
     return converted;
