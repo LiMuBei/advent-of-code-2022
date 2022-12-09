@@ -1,18 +1,30 @@
 import { readFileSync } from 'fs';
 
-enum Weapon {
+export enum Weapon {
   ROCK = 1,
   PAPER = 2,
   SCISSORS = 3,
 }
 
-enum Outcome {
-  LOSS,
+export function next(w: Weapon): Weapon {
+  const n = w + 1;
+  if (n > 3) return 1;
+  return n;
+}
+
+export function prev(w: Weapon): Weapon {
+  const n = w - 1;
+  if (n < 1) return 3;
+  return n;
+}
+
+export enum Outcome {
+  LOSS = 0,
   DRAW = 3,
   WIN = 6,
 }
 
-function mapWeapon(symbol: string) {
+export function mapWeapon(symbol: string) {
   switch (symbol) {
     case 'A':
     case 'X':
@@ -28,7 +40,7 @@ function mapWeapon(symbol: string) {
   }
 }
 
-function mapOutcome(symbol: string) {
+export function mapOutcome(symbol: string) {
   switch (symbol) {
     case 'X':
       return Outcome.LOSS;
@@ -41,64 +53,39 @@ function mapOutcome(symbol: string) {
   }
 }
 
-function calculatePoints(game: Weapon[]) {
+export function calculatePoints(game: Weapon[]) {
   const theirs = game[0];
   const mine = game[1];
 
-  let outcome: Outcome;
-  if (theirs === mine) {
-    outcome = Outcome.DRAW;
-  } else if (
-    (theirs === Weapon.ROCK && mine === Weapon.PAPER) ||
-    (theirs === Weapon.PAPER && mine === Weapon.SCISSORS) ||
-    (theirs === Weapon.SCISSORS && mine === Weapon.ROCK)
-  ) {
-    outcome = Outcome.WIN;
-  } else if (
-    (theirs === Weapon.ROCK && mine === Weapon.SCISSORS) ||
-    (theirs === Weapon.PAPER && mine === Weapon.ROCK) ||
-    (theirs === Weapon.SCISSORS && mine === Weapon.PAPER)
-  ) {
-    outcome = Outcome.LOSS;
-  } else {
-    throw new Error('Unknown pairing!');
-  }
+  const outcome = determineOutcome(theirs, mine);
 
   return outcome + mine;
 }
 
-function choiceForOutcome(theirs: Weapon, outcome: Outcome): Weapon {
+export function determineOutcome(theirs: Weapon, mine: Weapon): Outcome {
+  const p = prev(theirs);
+  const n = next(theirs);
+  if (p === mine) return Outcome.LOSS;
+  if (n === mine) return Outcome.WIN;
+  return Outcome.DRAW;
+}
+
+export function choiceForOutcome(theirs: Weapon, outcome: Outcome): Weapon {
   if (outcome === Outcome.DRAW) {
     return theirs;
   }
 
   if (outcome === Outcome.WIN) {
-    switch (theirs) {
-      case Weapon.ROCK:
-        return Weapon.PAPER;
-      case Weapon.PAPER:
-        return Weapon.SCISSORS;
-      case Weapon.SCISSORS:
-        return Weapon.ROCK;
-      default:
-        throw new Error('Unknown weapon from them');
-    }
-  } else if (outcome === Outcome.LOSS) {
-    switch (theirs) {
-      case Weapon.ROCK:
-        return Weapon.SCISSORS;
-      case Weapon.PAPER:
-        return Weapon.ROCK;
-      case Weapon.SCISSORS:
-        return Weapon.PAPER;
-      default:
-        throw new Error('Unknown weapon from them');
-    }
+    return next(theirs);
+  }
+
+  if (outcome === Outcome.LOSS) {
+    return prev(theirs);
   }
 }
 
-function parseInput() {
-  const fileContents = readFileSync('src/02/input.txt', 'utf-8');
+export function parseInput(path: string) {
+  const fileContents = readFileSync(path, 'utf-8');
   const games = fileContents
     .trim()
     .split('\n')
@@ -106,8 +93,8 @@ function parseInput() {
   return games;
 }
 
-export function calculateWinningPointsPart1() {
-  const games = parseInput();
+export function calculateWinningPointsPart1(path: string) {
+  const games = parseInput(path);
   const gamesWithSymbols = games.map((g) => g.map((s) => mapWeapon(s)));
   const gamePoints = gamesWithSymbols.map((g) => calculatePoints(g));
   const totalPoints = gamePoints.reduce((p, c) => p + c);
@@ -115,8 +102,8 @@ export function calculateWinningPointsPart1() {
   return totalPoints;
 }
 
-export function calculateWinningPointsPart2() {
-  const games = parseInput();
+export function calculateWinningPointsPart2(path) {
+  const games = parseInput(path);
   const gamesWithTheirsAndOutcome = games.map((g) => [mapWeapon(g[0]), mapOutcome(g[1])]);
   const gamesWithTheirsAndOutcomeAndRequiredMine = gamesWithTheirsAndOutcome.map(([theirs, outcome]) => [
     theirs,
@@ -130,4 +117,9 @@ export function calculateWinningPointsPart2() {
 
   const totalPoints = gamePoints.reduce((p, c) => p + c);
   return totalPoints;
+}
+
+export function solveDay2() {
+  console.log(`Part 1: total Points is ${calculateWinningPointsPart1('src/02/input.txt')}`);
+  console.log(`Part 2: total Points is ${calculateWinningPointsPart2('src/02/input.txt')}`);
 }

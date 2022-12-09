@@ -8,10 +8,11 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "lint": "eslint *.ts",
     "format": "eslint *.ts --fix",
-    "test": "jest"
+    "test": "jest",
+    "solve": "tsc -p tsconfig.build.json && node dist/all.js"
   },
   "devDependencies": {
     "@types/jest": "^29.2.3",
