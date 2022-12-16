@@ -1,12 +1,19 @@
-import { assignPriority, findSharedTypes, parseInput, solveDay3 } from './solution';
+import {
+  assignPriority,
+  findSharedItems,
+  findSharedItemsInCompartments,
+  parseInput,
+  solveDay3,
+  strToArray,
+} from './solution';
 
 describe('Day 3 solution', () => {
   it('should parse input correctly', () => {
     const parsed = parseInput('src/03/test-input.txt');
-    expect(parsed[0].first[0]).toStrictEqual({ type: 'a', priority: 1 });
-    expect(parsed[0].second[0]).toStrictEqual({ type: 'c', priority: 3 });
-    expect(parsed[1].first[0]).toStrictEqual({ type: 'e', priority: 5 });
-    expect(parsed[1].second[0]).toStrictEqual({ type: 'g', priority: 7 });
+    expect(parsed[0].first[0]).toBe('a');
+    expect(parsed[0].second[0]).toBe('c');
+    expect(parsed[1].first[0]).toBe('e');
+    expect(parsed[1].second[0]).toBe('g');
   });
 
   test.each([
@@ -18,29 +25,28 @@ describe('Day 3 solution', () => {
   });
 
   it('should find shared items', () => {
-    const r1 = { first: [{ type: 'a', priority: 1 }], second: [{ type: 'a', priority: 1 }] };
-    expect(findSharedTypes(r1)).toStrictEqual([{ type: 'a', priority: 1 }]);
+    const r1 = { first: ['a'], second: ['a'] };
+    expect(findSharedItemsInCompartments(r1)).toStrictEqual(['a']);
 
     const r2 = {
-      first: [
-        { type: 'a', priority: 1 },
-        { type: 'D', priority: 30 },
-      ],
-      second: [
-        { type: 'a', priority: 1 },
-        { type: 'a', priority: 1 },
-        { type: 'D', priority: 30 },
-      ],
+      first: ['a', 'D'],
+      second: ['a', 'a', 'D'],
     };
-    expect(findSharedTypes(r2)).toStrictEqual([
-      { type: 'a', priority: 1 },
-      { type: 'D', priority: 30 },
-    ]);
+    expect(findSharedItemsInCompartments(r2)).toStrictEqual(['a', 'D']);
   });
 
   it('should return empty array if no shared types', () => {
-    const r = { first: [{ type: 'a', priority: 1 }], second: [{ type: 'b', priority: 2 }] };
-    expect(findSharedTypes(r)).toStrictEqual([]);
+    const r = { first: ['a'], second: ['b'] };
+    expect(findSharedItemsInCompartments(r)).toStrictEqual([]);
+  });
+
+  it('should find common item in group of 3 rucksacks', () => {
+    const r1 = { first: strToArray('vJrwpWtwJgWr'), second: strToArray('hcsFMMfFFhFp') };
+    const r2 = { first: strToArray('jqHRNqRjqzjGDLGL'), second: strToArray('rsFMfFZSrLrFZsSL') };
+    const r3 = { first: strToArray('PmmdzqPr'), second: strToArray('VvPwwTWBwg') };
+
+    const shared = findSharedItems([r1, r2, r3]);
+    expect(shared).toStrictEqual(['r']);
   });
 
   it('should solve', () => {

@@ -1,13 +1,9 @@
 import { readFileSync } from 'fs';
-
-interface Item {
-  type: string;
-  priority?: number;
-}
+import { groupBy } from '../util';
 
 interface Rucksack {
-  first: Item[];
-  second: Item[];
+  first: string[];
+  second: string[];
 }
 
 export function parseInput(path: string): Rucksack[] {
@@ -18,16 +14,20 @@ export function parseInput(path: string): Rucksack[] {
     const firstStr = l.slice(0, l.length / 2);
     const secondStr = l.slice(l.length / 2);
 
-    const first = strToItems(firstStr);
-    const second = strToItems(secondStr);
+    const first = strToArray(firstStr);
+    const second = strToArray(secondStr);
 
     return { first, second };
   });
   return splitIntoCompartments;
 }
 
-export function strToItems(s: string) {
-  return Array.from(s).map((c) => ({ type: c, priority: assignPriority(c) }));
+export function strToArray(s: string) {
+  return Array.from(s);
+}
+
+function distinct<T>(v: T, index: number, self: Array<T>) {
+  return self.indexOf(v) === index;
 }
 
 function azArray() {
@@ -43,24 +43,56 @@ export function assignPriority(type: string) {
   return prioritiesIndex.indexOf(type) + 1;
 }
 
-export function findSharedTypes(rucksack: Rucksack) {
-  const s = rucksack.second.map((i) => i.type);
-  const shared = rucksack.first.filter((i) => s.includes(i.type));
-
+export function findSharedItemsInCompartments(rucksack: Rucksack) {
+  const shared = rucksack.first.filter((i) => rucksack.second.some((i2) => i === i2));
   return shared;
 }
 
 function solvePart1() {
-    const parsed = parseInput('src/03/input.txt');
-    const shared = parsed.map((r) => {
-        const s = findSharedTypes(r);
-        return s.length > 0 ? s[0]: undefined;
-    })
+  const rucksacks = parseInput('src/03/input.txt');
+  const shared = rucksacks.map((r) => findSharedItemsInCompartments(r)).reduce((p, c) => p.concat(c));
 
-    const sum = shared.map((i) => i?.priority ?? 0).reduce((p, c) => p + c);
-    return sum;
+  const sharedPrios = shared.map((i) => assignPriority(i));
+  return sharedPrios.reduce((p, c) => p + c);
+}
+
+export function findSharedItems(sacks: Rucksack[]) {
+  if (sacks.length !== 3) {
+    throw new Error('Not exactly 3 rucksacks provided!');
+  }
+
+  const all = sacks
+    .map((r, i) =>
+      r.first
+        .concat(r.second)
+        .filter(distinct)
+        .map((item) => ({ n: i, item })),
+    )
+    .reduce((p, c) => p.concat(c));
+
+  const grouped = groupBy(all, (i) => i.item);
+
+  const r = Object.entries(grouped).filter((g) => g[1].length === 3);
+  const containedInAll = r.map((i) => i[0]);
+  if (containedInAll.length === 0) return undefined;
+
+  return containedInAll;
+}
+
+function solvePart2() {
+  const parsed = parseInput('src/03/input.txt');
+  const sharedPerGroup: string[][] = [];
+  for (let index = 0; index < parsed.length - 3; index += 3) {
+    const s = findSharedItems(parsed.slice(index, index + 3));
+    sharedPerGroup.push(s);
+  }
+  
+  const shared = sharedPerGroup.reduce((p, c) => p.concat(c));
+  const prios = shared.map((i) => assignPriority(i));
+  return prios.reduce((p, c) => p + c);
 }
 
 export function solveDay3() {
   console.log(`Sum of all shared types is: ${solvePart1()}`);
+  console.log(`Sum of all Elf groups is: ${solvePart2()}`);
 }
